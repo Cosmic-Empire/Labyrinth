@@ -6,14 +6,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   FileText,
-  ImagePlus,
-  LayoutDashboard,
+  Files,
   LogOut,
-  Plus,
-  Search,
   Settings,
 } from "lucide-react";
 import { useNotesWorkspace } from "@/src/components/workspace/NotesProvider";
+import { DriveUploadButton } from "@/src/components/workspace/DriveUploadButton";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -30,14 +28,12 @@ import {
 
 const items = [
   { label: "Notes", icon: FileText, href: "/workspace/notes", enabled: true },
-  { label: "Files", icon: ImagePlus, href: "/workspace/files", enabled: false },
-  { label: "Reports", icon: LayoutDashboard, href: "/workspace/reports", enabled: false },
-  { label: "Search", icon: Search, href: "/workspace/search", enabled: false },
+  { label: "Drive", icon: Files, href: "/drive", enabled: true },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { notes, loaded, active, create, select } = useNotesWorkspace();
+  const { notes, loaded, active, select } = useNotesWorkspace();
 
   return (
     <SidebarRoot
@@ -53,7 +49,7 @@ export default function Sidebar() {
             className="flex min-w-0 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 group-data-[collapsible=icon]:hidden"
           >
             <Image
-              src="/Icons/Labyrnth%20Icon.jpg"
+              src="/icon.jpg"
               alt=""
               width={38}
               height={38}
@@ -137,15 +133,7 @@ export default function Sidebar() {
       </SidebarContent>
 
       <SidebarFooter className="gap-2 overflow-visible p-3">
-        <button
-          type="button"
-          onClick={create}
-          aria-label="Create new note"
-          title="Create new note"
-          className="relative z-20 flex size-10 shrink-0 translate-x-[calc(-26%+0.75rem)] items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300"
-        >
-          <Plus className="size-5" />
-        </button>
+        <DriveUploadButton />
         <div className="flex h-10 items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-300 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
           <Settings className="size-4 shrink-0" />
           <span className="group-data-[collapsible=icon]:hidden">Settings</span>
