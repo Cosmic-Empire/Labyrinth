@@ -263,6 +263,7 @@ function SidebarTrigger({
   return (
     <Button
       data-sidebar="trigger"
+      data-workspace-sidebar-control
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
