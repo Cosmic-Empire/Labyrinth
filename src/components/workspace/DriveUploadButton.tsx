@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useNotesWorkspace } from "@/src/components/workspace/NotesProvider";
 import { DRIVE_ALLOWED_TYPES } from "@/src/lib/drive-constants";
 
-export function DriveUploadButton() {
+export function DriveUploadButton({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
   const { create } = useNotesWorkspace();
@@ -33,7 +33,7 @@ export function DriveUploadButton() {
           onClick={() => inputRef.current?.click()}
           aria-label="Upload files"
           title="Upload files"
-          className="relative z-20 flex size-10 shrink-0 translate-x-[calc(-26%+0.75rem)] items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0e4c42]"
+          className={`relative z-20 flex size-10 shrink-0 ${compact ? "" : "translate-x-[calc(-26%+0.75rem)]"} items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0e4c42] ${className}`}
         >
           <FileUp className="size-5" />
         </button>
@@ -47,7 +47,7 @@ export function DriveUploadButton() {
       onClick={create}
       aria-label="Create new note"
       title="Create new note"
-      className="relative z-20 flex size-10 shrink-0 translate-x-[calc(-26%+0.75rem)] items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300"
+      className={`relative z-20 flex size-10 shrink-0 ${compact ? "" : "translate-x-[calc(-26%+0.75rem)]"} items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300 ${className}`}
     >
       <Plus className="size-5" />
     </button>

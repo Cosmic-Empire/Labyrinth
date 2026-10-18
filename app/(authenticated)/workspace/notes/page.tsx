@@ -30,6 +30,7 @@ export default function NotesPage() {
           type="button"
           onClick={() => remove(active.id)}
           aria-label={`Delete ${active.title || "untitled note"}`}
+          data-note-delete
           className="rounded-lg px-3 py-2 font-mono text-xs text-white/40 transition hover:bg-white/5 hover:text-red-400"
         >
           DELETE

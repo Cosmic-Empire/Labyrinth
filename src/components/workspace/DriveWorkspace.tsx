@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AudioLines, Check, Clipboard, File, FileImage, FileText, FileUp, Film, GripVertical, HardDrive, LoaderCircle, MoreHorizontal, Pencil, Trash2, UploadCloud, WifiOff, X } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import { PdfThumbnail } from "@/src/components/workspace/PdfThumbnail";
 import { toast } from "sonner";
 import { useNotesWorkspace } from "@/src/components/workspace/NotesProvider";
@@ -104,7 +105,8 @@ function FileTile({
       aria-label={`${file.name}, ${formatSize(file.size)}${failed ? ", upload failed" : ""}`}
       onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(); } }}
       data-drive-file-tile
-      className={`group relative flex h-full min-w-0 cursor-pointer flex-col items-center rounded-2xl border p-4 text-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0e4c42] ${selected ? "border-[#0e4c42] bg-[#0e4c42]/15" : "border-transparent hover:border-white/10 hover:bg-white/[0.04]"} ${dropTarget ? "border-white/50 bg-white/[0.08]" : ""} ${dragging ? "opacity-45" : ""}`}
+      data-drive-selected={selected || undefined}
+      className={`group relative flex h-full min-w-0 cursor-pointer flex-col items-center rounded-2xl border p-4 text-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0e4c42] ${selected ? "border-[var(--drive-selection-border)] bg-[var(--drive-selection)]" : "border-transparent hover:border-white/10 hover:bg-white/[0.04]"} ${dropTarget ? "border-white/50 bg-white/[0.08]" : ""} ${dragging ? "opacity-45" : ""}`}
     >
       <div className="relative mb-3 flex aspect-[4/3] w-full max-w-56 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] text-white/50">
         {file.thumbnail_url ? (
@@ -120,7 +122,7 @@ function FileTile({
           </div>
         )}
         {file.status === "ready" && (
-          <button type="button" onClick={(event) => { event.stopPropagation(); onContextMenu(event); }} aria-label={`More actions for ${file.name}`} className="absolute right-2 top-2 rounded-lg border border-white/10 bg-black/65 p-1.5 text-white/75 opacity-0 transition hover:bg-black/90 hover:text-white focus:opacity-100 group-hover:opacity-100">
+          <button type="button" data-drive-menu-button onClick={(event) => { event.stopPropagation(); onContextMenu(event); }} aria-label={`More actions for ${file.name}`} className="absolute right-2 top-2 rounded-lg border border-white/10 bg-black/65 p-1.5 text-white/75 opacity-0 transition hover:bg-black/90 hover:text-white focus:opacity-100 group-hover:opacity-100">
             <MoreHorizontal className="size-4" />
           </button>
         )}
@@ -153,6 +155,7 @@ function FileTile({
 
 export function DriveWorkspace() {
   const { userId } = useNotesWorkspace();
+  const searchParams = useSearchParams();
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [uploads, setUploads] = useState<UploadingDriveFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,6 +164,7 @@ export function DriveWorkspace() {
   const [storageLoaded, setStorageLoaded] = useState(false);
   const online = useSyncExternalStore(subscribeOnline, getOnlineSnapshot, getOnlineServerSnapshot);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dismissedRequestedFileId, setDismissedRequestedFileId] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [menu, setMenu] = useState<{ fileId: string; x: number; y: number } | null>(null);
   const [renameId, setRenameId] = useState<string | null>(null);
@@ -284,18 +288,28 @@ export function DriveWorkspace() {
         setRenameId(null);
       }
     };
-    const dismiss = () => setMenu(null);
+    const dismiss = (event: MouseEvent) => {
+      if (event.target instanceof Element && event.target.closest("[data-drive-file-tile], [data-drive-context-menu]")) return;
+      setMenu(null);
+      setSelectedId(null);
+      setDismissedRequestedFileId(searchParams.get("file"));
+    };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("click", dismiss);
+    document.addEventListener("pointerdown", dismiss, true);
+    document.addEventListener("click", dismiss, true);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("click", dismiss);
+      document.removeEventListener("pointerdown", dismiss, true);
+      document.removeEventListener("click", dismiss, true);
     };
-  }, []);
+  }, [searchParams]);
 
   const menuFile = files.find((file) => file.id === menu?.fileId);
   const uploadById = useMemo(() => new Map(uploads.map((upload) => [upload.id, upload])), [uploads]);
   const orderedFiles = useMemo(() => [...files].sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at)), [files]);
+
+  const requestedFileId = searchParams.get("file");
+  const effectiveSelectedId = requestedFileId && requestedFileId !== dismissedRequestedFileId && files.some((file) => file.id === requestedFileId) ? requestedFileId : selectedId;
 
   const onDrop = (event: React.DragEvent) => {
     event.preventDefault();
@@ -438,10 +452,11 @@ export function DriveWorkspace() {
               aria-valuemax={DRIVE_STORAGE_LIMIT_BYTES}
               aria-valuenow={Math.min(storageUsed, DRIVE_STORAGE_LIMIT_BYTES)}
               aria-valuetext={storageLoaded ? `${formatStorage(storageUsed)} of 500 MB used` : "Loading storage usage"}
+              data-drive-storage-bar
               className="h-1.5 overflow-hidden rounded-full bg-white/10"
               aria-busy={!storageLoaded}
             >
-              <div className={`h-full rounded-full transition-[width] ${storageUsed >= DRIVE_STORAGE_LIMIT_BYTES ? "bg-rose-400" : "bg-[#82b9ab]"}`} style={{ width: `${Math.min(100, (storageUsed / DRIVE_STORAGE_LIMIT_BYTES) * 100)}%` }} />
+              <div className={`h-full rounded-full transition-[width] ${storageUsed >= DRIVE_STORAGE_LIMIT_BYTES ? "bg-rose-400" : "bg-[#679889]"}`} style={{ width: `${Math.min(100, (storageUsed / DRIVE_STORAGE_LIMIT_BYTES) * 100)}%` }} />
             </div>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-xs text-white/45">
@@ -487,7 +502,7 @@ export function DriveWorkspace() {
                 ) : (
                   <FileTile
                     file={file}
-                    selected={selectedId === file.id}
+                    selected={effectiveSelectedId === file.id}
                     progress={uploadById.get(file.id)}
                     onSelect={() => setSelectedId(file.id)}
                     dropTarget={dropTargetId === file.id}
@@ -535,6 +550,7 @@ export function DriveWorkspace() {
       {menu && menuFile && createPortal(
         <div
           role="menu"
+          data-drive-context-menu
           aria-label={`Actions for ${menuFile.name}`}
           className="fixed z-[100] w-48 overflow-hidden rounded-xl border border-white/10 bg-[#191918] p-1.5 shadow-2xl shadow-black/50"
           style={{ left: menu.x, top: menu.y }}
@@ -544,7 +560,7 @@ export function DriveWorkspace() {
           <button role="menuitem" type="button" onClick={() => void handleCopy(menuFile)} disabled={copyingId === menuFile.id} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-white/80 hover:bg-white/[0.07] disabled:opacity-50"><Clipboard className="size-4 text-white/45" /> Copy</button>
           <button role="menuitem" type="button" onClick={() => beginRename(menuFile)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-white/80 hover:bg-white/[0.07]"><Pencil className="size-4 text-white/45" /> Rename</button>
           <div className="my-1 h-px bg-white/10" />
-          <button role="menuitem" type="button" onClick={() => void handleDelete(menuFile)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-300 hover:bg-red-500/10"><Trash2 className="size-4" /> Delete</button>
+          <button role="menuitem" type="button" data-destructive onClick={() => void handleDelete(menuFile)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-300 hover:bg-red-500/10"><Trash2 className="size-4" /> Delete</button>
         </div>,
         document.body,
       )}

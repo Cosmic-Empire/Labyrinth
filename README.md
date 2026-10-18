@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Labora AI setup
+
+Labora reads the signed-in user's notes and readable Drive files, chooses relevant excerpts, and sends them with the conversation to the selected provider. Context is capped (up to 24 sources and 72,000 characters per request); scanned images and unsupported file types are not text-indexed.
+
+Configure provider keys in the server-only `.env.local` file (never prefix them with `NEXT_PUBLIC_`):
+
+```bash
+GEMINI_API_KEY=your_google_ai_studio_key
+OPENROUTER_API_KEY=your_openrouter_key
+```
+
+The selector uses Google Gemini 3.8 Flash (`gemini-3.8-flash`, free-tier token pricing), OpenRouter Gemma 4 31B (`google/gemma-4-31b-it:free`), and LiquidAI LFM2.5-2.6B (`liquid/lfm-2.5-2.6b:free`). Both OpenRouter models have zero token cost on OpenRouter. Free-tier rate limits and model availability can change. Google documents Gemini free-tier content as potentially used to improve its products; workspace excerpts go to whichever provider is selected.
+
+Labora enforces a **1,000,000-token monthly allowance per signed-in user**, shared across all three models. Apply `supabase/migrations/20261019000000_labora_token_quota.sql` before enabling chat; the database atomically reserves request budgets, then reconciles them with provider-reported usage. Users can see remaining tokens and the UTC monthly reset date in the chat panel.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

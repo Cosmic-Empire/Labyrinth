@@ -56,6 +56,7 @@ function useOnline() {
 
 export function useNotesSync(user: User) {
   const [notes, setNotes] = useState<Note[]>([]);
+  const noteRevisionSignature = useMemo(() => notes.map((note) => `${note.id}:${note.updatedAt}`).join("|"), [notes]);
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState<NoteSyncStatus>("loading");
   const online = useOnline();
@@ -225,6 +226,24 @@ export function useNotesSync(user: User) {
   useEffect(() => {
     retrySync.current = () => { void synchronize(); };
   }, [synchronize]);
+
+  useEffect(() => {
+    if (!loaded || !online) return;
+    const refreshSearchEmbeddings = () => {
+      void fetch("/api/workspace/search", { cache: "no-store" })
+        .then((response) => {
+          if (!response.ok) console.warn("Background note search indexing is unavailable.");
+        })
+        .catch(() => console.warn("Background note search indexing could not connect."));
+    };
+    refreshSearchEmbeddings();
+    const debounce = window.setTimeout(refreshSearchEmbeddings, 900);
+    const interval = window.setInterval(refreshSearchEmbeddings, 60_000);
+    return () => {
+      window.clearTimeout(debounce);
+      window.clearInterval(interval);
+    };
+  }, [loaded, noteRevisionSignature, online]);
 
   useEffect(() => {
     if (!loaded) return;

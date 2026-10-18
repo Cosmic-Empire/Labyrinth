@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,10 +8,12 @@ import {
   FileText,
   Files,
   LogOut,
+  Plus,
   Settings,
 } from "lucide-react";
 import { useNotesWorkspace } from "@/src/components/workspace/NotesProvider";
 import { DriveUploadButton } from "@/src/components/workspace/DriveUploadButton";
+import { WorkspaceSearchTrigger } from "@/src/components/workspace/WorkspaceSearch";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -33,7 +35,8 @@ const items = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { notes, loaded, active, select } = useNotesWorkspace();
+  const { notes, loaded, active, select, create } = useNotesWorkspace();
+  const createNote = useCallback(() => { create(); }, [create]);
 
   return (
     <SidebarRoot
@@ -46,7 +49,8 @@ export default function Sidebar() {
           <Link
             href="/workspace/notes"
             aria-label="Labyrinth home"
-            className="flex min-w-0 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 group-data-[collapsible=icon]:hidden"
+            data-no-interaction-hover
+            className="flex min-w-0 items-center gap-3 rounded-xl bg-transparent outline-none hover:bg-transparent hover:text-inherit focus-visible:ring-2 focus-visible:ring-zinc-400 group-data-[collapsible=icon]:hidden"
           >
             <Image
               src="/icon.jpg"
@@ -63,6 +67,7 @@ export default function Sidebar() {
                 </Link>
           <SidebarTrigger
             aria-label="Toggle sidebar"
+            data-workspace-sidebar-control
             className="size-9 shrink-0 rounded-xl text-zinc-300 hover:bg-white/10 hover:text-white group-data-[collapsible=icon]:mx-auto"
           />
         </div>
@@ -133,15 +138,19 @@ export default function Sidebar() {
       </SidebarContent>
 
       <SidebarFooter className="gap-2 overflow-visible p-3">
-        <DriveUploadButton />
-        <div className="flex h-10 items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-300 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
+        <div className="hidden items-center justify-end gap-2 group-data-[collapsible=icon]:flex-col md:flex">
+          <WorkspaceSearchTrigger />
+          {pathname === "/drive" ? <DriveUploadButton /> : <button type="button" onClick={createNote} aria-label="Create new note" title="Create new note" className="relative z-20 flex size-10 shrink-0 items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300"><Plus className="size-5" /></button>}
+        </div>
+        <Link href="/settings" aria-label="Settings" data-workspace-sidebar-control aria-current={pathname.startsWith("/settings") ? "page" : undefined} className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-300 transition hover:bg-white/10 hover:text-white group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2 ${pathname.startsWith("/settings") ? "bg-white/10 text-white" : ""}`}>
           <Settings className="size-4 shrink-0" />
           <span className="group-data-[collapsible=icon]:hidden">Settings</span>
-        </div>
+        </Link>
         <form action="/auth/signout" method="post">
           <button
             type="submit"
             aria-label="Sign out"
+            data-workspace-sidebar-control
             className="flex h-10 w-full items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-400 transition hover:bg-white/10 hover:text-white group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
           >
             <LogOut className="size-4 shrink-0" />

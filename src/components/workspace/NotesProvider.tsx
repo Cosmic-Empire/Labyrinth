@@ -14,6 +14,7 @@ import type { Note } from "@/src/lib/notes";
 
 type NotesWorkspaceValue = {
   userId: string;
+  user: User;
   notes: Note[];
   loaded: boolean;
   status: NoteSyncStatus;
@@ -30,7 +31,9 @@ export function NotesProvider({ user, children }: { user: User; children: ReactN
   const { notes, loaded, status, create: createNote, update, remove } = useNotesSync(user);
   const [activeId, setActiveId] = useState<string | null>(null);
   const sorted = useMemo(() => [...notes].sort((a, b) => b.updatedAt - a.updatedAt), [notes]);
-  const active = sorted.find((note) => note.id === activeId) ?? sorted[0] ?? null;
+  const requestedNoteId = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("note");
+  const selectedId = requestedNoteId && sorted.some((note) => note.id === requestedNoteId) ? requestedNoteId : activeId;
+  const active = sorted.find((note) => note.id === selectedId) ?? sorted[0] ?? null;
 
   const create = useCallback(() => {
     const id = createNote();
@@ -40,8 +43,8 @@ export function NotesProvider({ user, children }: { user: User; children: ReactN
   const select = useCallback((id: string) => setActiveId(id), []);
 
   const value = useMemo(
-    () => ({ userId: user.id, notes: sorted, loaded, status, active, create, select, update, remove }),
-    [user.id, sorted, loaded, status, active, create, select, update, remove],
+    () => ({ userId: user.id, user, notes: sorted, loaded, status, active, create, select, update, remove }),
+    [user, sorted, loaded, status, active, create, select, update, remove],
   );
 
   return <NotesWorkspaceContext.Provider value={value}>{children}</NotesWorkspaceContext.Provider>;
