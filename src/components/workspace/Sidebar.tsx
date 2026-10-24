@@ -97,6 +97,7 @@ export default function Sidebar() {
                           href={href}
                           aria-label={label}
                           aria-current={isActive ? "page" : undefined}
+                          transitionTypes={["workspace-tab"]}
                         >
                           <Icon className="size-4 shrink-0 group-data-[collapsible=icon]:mx-auto" />
                           <span className="group-data-[collapsible=icon]:hidden">{label}</span>
@@ -142,7 +143,7 @@ export default function Sidebar() {
           <WorkspaceSearchTrigger />
           {pathname === "/drive" ? <DriveUploadButton /> : <button type="button" onClick={createNote} aria-label="Create new note" title="Create new note" className="relative z-20 flex size-10 shrink-0 items-center justify-center self-end rounded-full border border-white/15 bg-[#1b1b1b] text-zinc-200 shadow-lg transition hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-300"><Plus className="size-5" /></button>}
         </div>
-        <Link href="/settings" aria-label="Settings" data-workspace-sidebar-control aria-current={pathname.startsWith("/settings") ? "page" : undefined} className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-300 transition hover:bg-white/10 hover:text-white group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2 ${pathname.startsWith("/settings") ? "bg-white/10 text-white" : ""}`}>
+        <Link href="/settings" aria-label="Settings" data-workspace-sidebar-control aria-current={pathname.startsWith("/settings") ? "page" : undefined} transitionTypes={["workspace-tab"]} className={`flex h-10 items-center gap-2 rounded-xl px-3 text-[12px] text-zinc-300 transition hover:bg-white/10 hover:text-white group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2 ${pathname.startsWith("/settings") ? "bg-white/10 text-white" : ""}`}>
           <Settings className="size-4 shrink-0" />
           <span className="group-data-[collapsible=icon]:hidden">Settings</span>
         </Link>

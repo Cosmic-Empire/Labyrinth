@@ -62,6 +62,7 @@ export function useNotesSync(user: User) {
   const online = useOnline();
   const notesRef = useRef(notes);
   const syncLock = useRef(false);
+  const syncRequested = useRef(false);
   const syncTimer = useRef<number | null>(null);
   const retrySync = useRef<() => void>(() => undefined);
   const userId = user.id;
@@ -127,12 +128,17 @@ export function useNotesSync(user: User) {
   }, [supabase, userId]);
 
   const synchronize = useCallback(async () => {
-    if (!online || !loaded || syncLock.current) {
+    if (!online || !loaded) {
       if (!online && loaded) setStatus("offline");
+      return;
+    }
+    if (syncLock.current) {
+      syncRequested.current = true;
       return;
     }
     syncLock.current = true;
     let succeeded = false;
+    const revisionsAtSyncStart = new Map(notesRef.current.map((note) => [note.id, note.updatedAt]));
     setStatus("syncing");
 
     try {
@@ -176,7 +182,8 @@ export function useNotesSync(user: User) {
         if (!acknowledged) {
           notesRef.current = await readLocalNotes(userId);
           setNotes(notesRef.current);
-          throw new Error("A newer local edit was kept and will be retried.");
+          syncRequested.current = true;
+          break;
         }
 
         if (saved.deleted) {
@@ -201,8 +208,15 @@ export function useNotesSync(user: User) {
       if (selectError) throw selectError;
       const remote = ((rows ?? []) as RemoteRow[]).map((row) => fromRemote(row, offset));
       const reconciled = await reconcileLocalNotes(userId, remote);
-      notesRef.current = reconciled;
-      setNotes(reconciled);
+      const latestById = new Map(reconciled.map((note) => [note.id, note]));
+      for (const note of notesRef.current) {
+        const revisionAtStart = revisionsAtSyncStart.get(note.id);
+        if (revisionAtStart === undefined || note.updatedAt > revisionAtStart) {
+          latestById.set(note.id, note);
+        }
+      }
+      notesRef.current = [...latestById.values()];
+      setNotes(notesRef.current);
       const unsynced = await readPendingNotes(userId);
       setStatus(unsynced.length ? "syncing" : "saved");
       succeeded = true;
@@ -211,9 +225,14 @@ export function useNotesSync(user: User) {
       setStatus("offline");
     } finally {
       syncLock.current = false;
-      if (succeeded && navigator.onLine && syncTimer.current === null) {
-        const remaining = await readPendingNotes(userId).catch(() => []);
-        if (remaining.length > 0) {
+      const retryRequested = syncRequested.current;
+      syncRequested.current = false;
+      if ((succeeded || retryRequested) && navigator.onLine && syncTimer.current === null) {
+        const remaining = retryRequested ? [] : await readPendingNotes(userId).catch((error: unknown) => {
+          console.error("Unable to check for pending note edits.", error);
+          return [];
+        });
+        if (retryRequested || remaining.length > 0) {
           syncTimer.current = window.setTimeout(() => {
             syncTimer.current = null;
             retrySync.current();
@@ -228,7 +247,7 @@ export function useNotesSync(user: User) {
   }, [synchronize]);
 
   useEffect(() => {
-    if (!loaded || !online) return;
+    if (!loaded || !online || status !== "saved") return;
     const refreshSearchEmbeddings = () => {
       void fetch("/api/workspace/search", { cache: "no-store" })
         .then((response) => {
@@ -236,14 +255,13 @@ export function useNotesSync(user: User) {
         })
         .catch(() => console.warn("Background note search indexing could not connect."));
     };
-    refreshSearchEmbeddings();
     const debounce = window.setTimeout(refreshSearchEmbeddings, 900);
     const interval = window.setInterval(refreshSearchEmbeddings, 60_000);
     return () => {
       window.clearTimeout(debounce);
       window.clearInterval(interval);
     };
-  }, [loaded, noteRevisionSignature, online]);
+  }, [loaded, noteRevisionSignature, online, status]);
 
   useEffect(() => {
     if (!loaded) return;

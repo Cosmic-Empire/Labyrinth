@@ -1,6 +1,6 @@
 "use client";
 
-import NoteEditor from "@/src/components/workspace/NoteEditor";
+import NoteEditor from "@/src/components/workspace/BlockNoteEditorClient";
 import { useNotesWorkspace } from "@/src/components/workspace/NotesProvider";
 
 export default function NotesPage() {
