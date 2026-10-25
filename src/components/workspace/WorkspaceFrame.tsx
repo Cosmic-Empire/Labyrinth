@@ -1,5 +1,6 @@
 "use client";
 
+import { ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import Sidebar from "@/src/components/workspace/Sidebar";
@@ -27,7 +28,11 @@ export function WorkspaceFrame({ user, children }: { user: User; children: React
             <WorkspaceSearchTrigger />
             <DriveUploadButton compact />
           </div>
-          <main className="min-h-0 flex-1 px-4 py-4 md:px-8 md:py-6">{children}</main>
+          <main className="min-h-0 flex-1 px-4 py-4 md:px-8 md:py-6">
+            <ViewTransition key={pathname} name="workspace-page" share="auto" enter="auto" default="none">
+              {children}
+            </ViewTransition>
+          </main>
         </SidebarInset>
         <LaboraAssistant />
         <WorkspaceSearch />

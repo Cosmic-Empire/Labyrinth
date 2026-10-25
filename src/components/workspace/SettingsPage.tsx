@@ -9,6 +9,43 @@ import { createClient } from "@/src/lib/supabase/client";
 const THEME_KEY = "labyrinth-workspace-theme";
 const DELETE_CONFIRMATION_HEADER = "x-confirm-account-deletion";
 type Theme = "system" | "dark" | "light";
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => { finished: Promise<void> };
+};
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  root.dataset.workspaceTheme = theme;
+  root.classList.toggle("dark", theme !== "light");
+  root.style.colorScheme = theme === "light" ? "light" : "dark";
+}
+
+function transitionTheme(theme: Theme, trigger: HTMLButtonElement) {
+  const root = document.documentElement;
+  const startViewTransition = (document as ViewTransitionDocument).startViewTransition;
+  if (!startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    applyTheme(theme);
+    return;
+  }
+
+  const bounds = trigger.getBoundingClientRect();
+  const originX = `${bounds.left + bounds.width / 2}px`;
+  const originY = `${bounds.top + bounds.height / 2}px`;
+  root.style.setProperty("--theme-transition-x", originX);
+  root.style.setProperty("--theme-transition-y", originY);
+
+  const clearOrigin = () => {
+    if (root.style.getPropertyValue("--theme-transition-x") === originX) root.style.removeProperty("--theme-transition-x");
+    if (root.style.getPropertyValue("--theme-transition-y") === originY) root.style.removeProperty("--theme-transition-y");
+  };
+  try {
+    const transition = startViewTransition.call(document, () => applyTheme(theme));
+    void transition.finished.then(clearOrigin, clearOrigin);
+  } catch {
+    clearOrigin();
+    applyTheme(theme);
+  }
+}
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -39,13 +76,6 @@ export function SettingsPage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [deleteError, setDeleteError] = useState("");
 
-  function applyTheme(next: Theme) {
-    const root = document.documentElement;
-    root.dataset.workspaceTheme = next;
-    root.classList.toggle("dark", next !== "light");
-    root.style.colorScheme = next === "light" ? "light" : "dark";
-  }
-
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const saved = window.localStorage.getItem(THEME_KEY);
@@ -56,9 +86,9 @@ export function SettingsPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  function selectTheme(next: Theme) {
+  function selectTheme(next: Theme, trigger: HTMLButtonElement) {
     setTheme(next);
-    applyTheme(next);
+    transitionTheme(next, trigger);
     window.localStorage.setItem(THEME_KEY, next);
   }
 
@@ -148,7 +178,7 @@ export function SettingsPage() {
       <Section title="Theme" description="Choose how Labyrinth should appear on this device.">
         <div role="group" aria-label="Theme" className="flex flex-wrap gap-2">
           {(["system", "dark", "light"] as const).map((value) => (
-            <button key={value} type="button" aria-pressed={theme === value} onClick={() => selectTheme(value)} className={`rounded-full border px-4 py-2 text-xs transition ${theme === value ? "border-white/35 bg-white/10 text-white" : "border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white/80"}`}>
+            <button key={value} type="button" aria-pressed={theme === value} onClick={(event) => selectTheme(value, event.currentTarget)} className={`rounded-full border px-4 py-2 text-xs transition ${theme === value ? "border-white/35 bg-white/10 text-white" : "border-white/10 text-white/50 hover:bg-white/[0.06] hover:text-white/80"}`}>
               {value === "system" ? "System settings" : value === "dark" ? "Dark" : "Light"}
             </button>
           ))}

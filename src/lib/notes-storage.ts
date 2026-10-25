@@ -222,19 +222,44 @@ export async function reconcileLocalNotes(userId: string, remoteNotes: RemoteNot
   const merged = new Map<string, Note>();
 
   for (const remote of remoteNotes) {
-    if (!remote.deleted && !pendingById.has(remote.id)) {
-      merged.set(remote.id, { id: remote.id, title: remote.title, content: remote.content, updatedAt: remote.updatedAt });
+    const pending = pendingById.get(remote.id);
+    if (pending && pending.updatedAt > remote.updatedAt) {
+      if (!pending.deleted) {
+        merged.set(pending.id, {
+          id: pending.id,
+          title: pending.title,
+          content: pending.content,
+          updatedAt: pending.updatedAt,
+        });
+      }
+    } else if (!remote.deleted) {
+      merged.set(remote.id, {
+        id: remote.id,
+        title: remote.title,
+        content: remote.content,
+        updatedAt: remote.updatedAt,
+      });
     }
   }
   for (const local of locals) {
     const pending = pendingById.get(local.id);
     if (pending && !pending.deleted && !remoteById.has(local.id)) {
-      merged.set(local.id, { id: local.id, title: local.title, content: local.content, updatedAt: local.updatedAt });
+      merged.set(local.id, {
+        id: local.id,
+        title: local.title,
+        content: local.content,
+        updatedAt: local.updatedAt,
+      });
     }
   }
   for (const pending of pendings) {
     if (!pending.deleted && !remoteById.has(pending.id)) {
-      merged.set(pending.id, { id: pending.id, title: pending.title, content: pending.content, updatedAt: pending.updatedAt });
+      merged.set(pending.id, {
+        id: pending.id,
+        title: pending.title,
+        content: pending.content,
+        updatedAt: pending.updatedAt,
+      });
     }
   }
 

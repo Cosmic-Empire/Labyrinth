@@ -1,108 +1,66 @@
 "use client";
 
-import { EditorContent, useEditor } from "@tiptap/react";
-import type { Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { Dictionary } from "@blocknote/core";
+import { en } from "@blocknote/core/locales";
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/shadcn";
+import "./NoteEditorTheme.css";
 
 type Props = {
   initialContent: string;
   onChange: (html: string) => void;
 };
 
+function subscribeTheme(callback: () => void) {
+  const observer = new MutationObserver(callback);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-workspace-theme"] });
+  return () => observer.disconnect();
+}
+
+function getThemeSnapshot(): "light" | "dark" {
+  return document.documentElement.dataset.workspaceTheme === "light" ? "light" : "dark";
+}
+
+function getServerThemeSnapshot(): "light" | "dark" {
+  return "dark";
+}
+
+const noteDictionary: Dictionary = {
+  ...en,
+  placeholders: {
+    ...en.placeholders,
+    emptyDocument: "Enter text or type '/' for commands",
+  },
+};
+
 export default function NoteEditor({ initialContent, onChange }: Props) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: initialContent,
-    immediatelyRender: false, // avoids a Next.js server/client mismatch
-    shouldRerenderOnTransaction: true, // keeps toolbar buttons' active state in sync
-    editorProps: { attributes: { class: "tiptap h-full focus:outline-none" } },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-  });
+  const editor = useCreateBlockNote({ dictionary: noteDictionary });
+  const [ready, setReady] = useState(false);
+  const initialContentRef = useRef(initialContent);
+  const theme = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getServerThemeSnapshot);
 
-  if (!editor) return null;
+  useEffect(() => {
+    const html = initialContentRef.current;
+    const blocks = html.trim() ? editor.tryParseHTMLToBlocks(html) : [];
+    if (blocks.length > 0) {
+      editor.replaceBlocks(editor.document.map((block) => block.id), blocks);
+    }
 
-  const btn = (active: boolean) =>
-    `rounded px-2 py-1 font-mono text-xs transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${
-      active ? "bg-[var(--accent)] text-black" : "text-white/70 hover:bg-white/10"
-    }`;
-  const toggle =
-    (action: (instance: Editor) => void) =>
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-      action(editor);
-    };
+    const frame = window.requestAnimationFrame(() => setReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [editor]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div
-        role="toolbar"
-        aria-label="Text formatting"
-        className="mb-3 flex flex-wrap gap-1 border-b border-white/10 pb-3"
-      >
-        <button
-          type="button"
-          aria-label="Bold"
-          aria-pressed={editor.isActive("bold")}
-          className={btn(editor.isActive("bold"))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleBold().run())}
-        >
-          B
-        </button>
-        <button
-          type="button"
-          aria-label="Italic"
-          aria-pressed={editor.isActive("italic")}
-          className={btn(editor.isActive("italic"))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleItalic().run())}
-        >
-          I
-        </button>
-        <button
-          type="button"
-          aria-label="Heading 1"
-          aria-pressed={editor.isActive("heading", { level: 1 })}
-          className={btn(editor.isActive("heading", { level: 1 }))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleHeading({ level: 1 }).run())}
-        >
-          H1
-        </button>
-        <button
-          type="button"
-          aria-label="Heading 2"
-          aria-pressed={editor.isActive("heading", { level: 2 })}
-          className={btn(editor.isActive("heading", { level: 2 }))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleHeading({ level: 2 }).run())}
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          aria-label="Bullet list"
-          aria-pressed={editor.isActive("bulletList")}
-          className={btn(editor.isActive("bulletList"))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleBulletList().run())}
-        >
-          • List
-        </button>
-        <button
-          type="button"
-          aria-label="Numbered list"
-          aria-pressed={editor.isActive("orderedList")}
-          className={btn(editor.isActive("orderedList"))}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggle((instance) => instance.chain().focus().toggleOrderedList().run())}
-        >
-          1. List
-        </button>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <EditorContent editor={editor} className="h-full" />
-      </div>
+    <div className={`note-blocknote h-full min-h-[16rem] ${ready ? "" : "invisible"}`} aria-busy={!ready}>
+      <BlockNoteView
+        editor={editor}
+        theme={theme}
+        className="bn-shadcn h-full"
+        onChange={(instance) => {
+          if (ready) onChange(instance.blocksToFullHTML(instance.document));
+        }}
+      />
     </div>
   );
 }

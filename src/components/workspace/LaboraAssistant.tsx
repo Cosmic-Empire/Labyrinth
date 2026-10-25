@@ -374,18 +374,6 @@ export function LaboraAssistant() {
             </button>
           </header>
 
-          {quota && (
-            <div className="shrink-0 border-b border-white/[0.07] px-4 py-2.5" aria-label="Monthly Labora token usage">
-              <div className="mb-1.5 flex items-center justify-between text-[10px] text-white/45">
-                <span>Monthly token allowance</span>
-                <span>{new Intl.NumberFormat().format(quota.remaining)} left · resets {new Date(quota.resetsAt).toLocaleDateString()}</span>
-              </div>
-              <div role="progressbar" aria-label="Monthly token allowance used" aria-valuemin={0} aria-valuemax={quota.limit} aria-valuenow={Math.min(quota.limit, quota.used + quota.reserved)} className="h-1 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-white/60 transition-[width]" style={{ width: `${Math.min(100, ((quota.limit - quota.remaining) / quota.limit) * 100)}%` }} />
-              </div>
-            </div>
-          )}
-
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4" aria-live="polite">
             {messages.length === 0 ? (
               <div className="flex items-start gap-2.5">
@@ -441,6 +429,17 @@ export function LaboraAssistant() {
 
           <form onSubmit={sendMessage} className="shrink-0 border-t border-white/10 p-3">
             <label htmlFor="labora-message" className="sr-only">Message Labora</label>
+            {quota && (
+              <div className="mb-2 px-2" aria-label="Monthly Labora token usage">
+                <div className="mb-1.5 flex items-center justify-between text-[10px] text-white/45">
+                  <span>Monthly token allowance</span>
+                  <span>{new Intl.NumberFormat().format(quota.remaining)} left · resets {new Date(quota.resetsAt).toLocaleDateString()}</span>
+                </div>
+                <div role="progressbar" aria-label="Monthly token allowance used" aria-valuemin={0} aria-valuemax={quota.limit} aria-valuenow={Math.min(quota.limit, quota.used + quota.reserved)} className="h-1 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-white/60 transition-[width]" style={{ width: `${Math.min(100, ((quota.limit - quota.remaining) / quota.limit) * 100)}%` }} />
+                </div>
+              </div>
+            )}
             <div className="mb-2 flex items-center justify-between px-2">
               <label htmlFor="labora-model" className="text-[10px] uppercase tracking-[0.12em] text-white/35">Model</label>
               <div ref={modelSelectorRef} className="relative z-20 flex items-center">

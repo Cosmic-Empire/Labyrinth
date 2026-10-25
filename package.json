@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@blocknote/core": "^0.56.0",
+    "@blocknote/react": "^0.56.0",
+    "@blocknote/shadcn": "^0.56.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "@tiptap/pm": "^3.32.0",
@@ -19,7 +22,7 @@
     "fflate": "^0.8.3",
     "lucide-react": "^1.57.0",
     "motion": "^14.2.0",
-    "next": "16.4.0",
+    "next": "16.4.3",
     "pdfjs-dist": "^5.4.394",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
@@ -33,7 +36,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

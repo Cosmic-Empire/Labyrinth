@@ -1,0 +1,348 @@
+.note-blocknote .bn-root[data-color-scheme="dark"] {
+  color-scheme: dark;
+  --color-background: #0c0c0b;
+  --color-foreground: #ededed;
+  --bn-colors-editor-background: transparent;
+  --color-border: rgb(255 255 255 / 12%);
+  --color-input: #292a27;
+  --color-muted: #242422;
+  --color-muted-foreground: #a3a3a3;
+  --color-popover: #191918;
+  --color-popover-foreground: #ededed;
+  --color-accent: #343833;
+  --color-accent-foreground: #f5f5f4;
+  --color-primary: #343833;
+  --color-primary-foreground: #fffefa;
+  --color-secondary: #292a27;
+  --color-secondary-foreground: #ededed;
+  --bn-colors-menu-text: #ededed;
+  --bn-colors-menu-background: #191918;
+  --bn-colors-hovered-text: #ededed;
+  --bn-colors-hovered-background: rgb(255 255 255 / 10%);
+  --bn-colors-selected-text: #f5f5f4;
+  --bn-colors-selected-background: #343833;
+  --bn-colors-disabled-text: #73766f;
+  --bn-colors-disabled-background: #292a27;
+  --bn-colors-shadow: rgb(0 0 0 / 35%);
+  --bn-colors-border: rgb(255 255 255 / 12%);
+  --bn-colors-side-menu: rgb(255 255 255 / 40%);
+  --bn-colors-highlights-gray-text: #bebdb8;
+  --bn-colors-highlights-gray-background: #464646;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] {
+  color-scheme: light;
+  --color-background: #f4f2ed;
+  --color-foreground: #292a27;
+  --bn-colors-editor-background: transparent;
+  --color-border: rgb(43 54 49 / 15%);
+  --color-input: #e5e6e3;
+  --color-muted: #e5e6e3;
+  --color-muted-foreground: #626660;
+  --color-popover: #fffefa;
+  --color-popover-foreground: #292a27;
+  --color-accent: #e5e6e3;
+  --color-accent-foreground: #333632;
+  --color-primary: #343833;
+  --color-primary-foreground: #fffefa;
+  --color-secondary: #e5e6e3;
+  --color-secondary-foreground: #292a27;
+  --bn-colors-editor-text: #292a27;
+  --bn-colors-menu-text: #292a27;
+  --bn-colors-menu-background: #fffefa;
+  --bn-colors-hovered-text: #292a27;
+  --bn-colors-hovered-background: #e5e6e3;
+  --bn-colors-selected-text: #333632;
+  --bn-colors-selected-background: #e5e6e3;
+  --bn-colors-disabled-text: #858982;
+  --bn-colors-disabled-background: #e5e6e3;
+  --bn-colors-shadow: rgb(42 52 48 / 20%);
+  --bn-colors-border: rgb(43 54 49 / 15%);
+  --bn-colors-side-menu: #858982;
+  --bn-colors-highlights-gray-text: #626660;
+  --bn-colors-highlights-gray-background: #e5e6e3;
+}
+
+/* BlockNote/ShadCN menus use Tailwind color utilities. Their portals retain
+   the editor root, so these scoped overrides cover dropdowns, pickers,
+   toolbars, slash/emoji menus, and the block-color (highlight) menu. */
+.note-blocknote .bn-root[data-color-scheme="dark"] :is(
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"],
+  [data-slot="dropdown-menu-positioner"],
+  [data-slot="dropdown-menu-sub-positioner"],
+  .bn-menu-dropdown,
+  .bn-color-picker-dropdown,
+  .bn-suggestion-menu,
+  .bn-grid-suggestion-menu,
+  .bn-toolbar,
+  .bn-panel
+) {
+  color: #ededed !important;
+  background: #191918 !important;
+  border-color: rgb(255 255 255 / 12%) !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] :is(
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"],
+  [data-slot="dropdown-menu-positioner"],
+  [data-slot="dropdown-menu-sub-positioner"],
+  .bn-menu-dropdown,
+  .bn-color-picker-dropdown,
+  .bn-suggestion-menu,
+  .bn-grid-suggestion-menu,
+  .bn-toolbar,
+  .bn-panel
+) {
+  color: #292a27 !important;
+  background: #fffefa !important;
+  border-color: rgb(43 54 49 / 15%) !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="dropdown-menu-label"],
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-label"] {
+  color: #a3a3a3;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] [data-slot="dropdown-menu-label"],
+.note-blocknote .bn-root[data-color-scheme="light"] [data-slot="select-label"] {
+  color: #626660;
+}
+
+.note-blocknote .bn-root .bn-editor {
+  background: transparent !important;
+  padding-inline: 0;
+}
+
+
+.note-blocknote .bn-side-menu {
+  gap: 2px;
+  translate: -20px 0;
+}
+
+.note-blocknote .bn-side-menu .bn-button {
+  width: 24px;
+  min-width: 24px;
+  color: var(--bn-colors-side-menu);
+}
+
+.note-blocknote .bn-side-menu .bn-button:hover {
+  color: var(--bn-colors-editor-text);
+}
+
+/* Keep list markers and the empty-list placeholder on the text line. */
+.note-blocknote .bn-editor .bn-block-content[data-content-type="numberedListItem"]::before,
+.note-blocknote .bn-editor .bn-block-content[data-content-type="bulletListItem"]::before {
+  align-items: center;
+  align-self: center;
+  height: 1.7em;
+  line-height: 1.7;
+}
+
+.note-blocknote .bn-editor .bn-block-content:is(
+  [data-content-type="numberedListItem"],
+  [data-content-type="bulletListItem"],
+  [data-content-type="checkListItem"],
+  [data-content-type="toggleListItem"]
+):has(.ProseMirror-trailingBreak:only-child) {
+  justify-content: flex-start !important;
+}
+
+.note-blocknote .bn-editor .bn-block-content:is(
+  [data-content-type="numberedListItem"],
+  [data-content-type="bulletListItem"],
+  [data-content-type="checkListItem"],
+  [data-content-type="toggleListItem"]
+)::after {
+  align-self: center;
+  line-height: 1.7;
+  margin-inline: 0;
+  text-align: left;
+}
+
+.note-blocknote .bn-editor .bn-block-content[data-content-type="paragraph"][data-is-only-empty-block] {
+  position: relative;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: flex-start !important;
+  min-height: 58px;
+  padding: 12px 0;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.note-blocknote .bn-editor .bn-block-content[data-content-type="paragraph"][data-is-only-empty-block]:hover {
+  border-radius: 8px;
+  background-color: rgb(255 255 255 / 8%);
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] .bn-editor .bn-block-content[data-content-type="paragraph"][data-is-only-empty-block]:hover {
+  background-color: rgb(41 42 39 / 7%);
+}
+
+.note-blocknote .bn-editor .bn-block-content[data-content-type="paragraph"][data-is-only-empty-block] > .bn-inline-content {
+  width: 100%;
+}
+
+.note-blocknote .bn-editor .bn-block-content[data-content-type="paragraph"][data-is-only-empty-block]::after {
+  position: absolute;
+  top: 50%;
+  /* Match BlockNote's default placeholder offset so its text starts at the
+     same position as the insertion caret. */
+  left: -2px;
+  margin: 0;
+  max-width: 100%;
+  transform: translateY(-50%);
+  color: var(--bn-colors-editor-text);
+  opacity: 0.5;
+  pointer-events: none;
+  text-align: left;
+}
+
+/* Dropdowns use Base UI's dynamic highlighted state; slash-menu items have
+   a static data-highlighted attribute, so only their actual selected row gets
+   a gray state (with pointer hover still supported). */
+.note-blocknote .bn-root[data-color-scheme="dark"] :is(
+  .bn-color-picker-dropdown,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) :is(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+):is(:hover, :focus, :focus-visible, [aria-selected="true"], [data-selected="true"], [aria-checked="true"], [data-checked="true"], [data-popup-open], [data-open]) {
+  color: #f5f5f4 !important;
+  background-color: #343833 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] :is(
+  .bn-color-picker-dropdown,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) :is(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+):is(:hover, :focus, :focus-visible, [data-highlighted], [aria-selected="true"], [data-selected="true"], [aria-checked="true"], [data-checked="true"], [data-popup-open], [data-open]) > *:not(.bn-color-icon):not([data-text-color]):not([data-background-color]) {
+  color: #f5f5f4 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] :is(.bn-suggestion-menu, .bn-grid-suggestion-menu) [role="option"]:is(:hover, :focus, :focus-visible, [aria-selected="true"]) {
+  color: #f5f5f4 !important;
+  background-color: #343833 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] .bn-suggestion-menu [role="option"],
+.note-blocknote .bn-root[data-color-scheme="dark"] .bn-grid-suggestion-menu [role="option"] {
+  color: #ededed !important;
+  background-color: transparent !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] :is(.bn-suggestion-menu, .bn-grid-suggestion-menu) [role="option"]:is(:hover, :focus, :focus-visible, [aria-selected="true"]) {
+  color: #f5f5f4 !important;
+  background-color: #343833 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] :is(
+  .bn-color-picker-dropdown,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) :is(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+):is(:hover, :focus, :focus-visible, [aria-selected="true"], [data-selected="true"], [aria-checked="true"], [data-checked="true"], [data-popup-open], [data-open]) {
+  color: #333632 !important;
+  background-color: #e5e6e3 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] :is(
+  .bn-color-picker-dropdown,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+) :is(
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="select-item"]
+):is(:hover, :focus, :focus-visible, [data-highlighted], [aria-selected="true"], [data-selected="true"], [aria-checked="true"], [data-checked="true"], [data-popup-open], [data-open]) > *:not(.bn-color-icon):not([data-text-color]):not([data-background-color]) {
+  color: #333632 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="light"] :is(.bn-suggestion-menu, .bn-grid-suggestion-menu) [role="option"]:is(:hover, :focus, :focus-visible, [aria-selected="true"]) {
+  color: #333632 !important;
+  background-color: #e5e6e3 !important;
+}
+
+/* Keep BlockNote's default dark highlight palette dark instead of inheriting
+   its light-mode values through the root variables. */
+.note-blocknote .bn-root[data-color-scheme="dark"] {
+  --bn-colors-highlights-brown-text: #d4aa91;
+  --bn-colors-highlights-brown-background: #64473a;
+  --bn-colors-highlights-red-text: #ff9292;
+  --bn-colors-highlights-red-background: #682c2c;
+  --bn-colors-highlights-orange-text: #ffc078;
+  --bn-colors-highlights-orange-background: #6d3b13;
+  --bn-colors-highlights-yellow-text: #ffe08a;
+  --bn-colors-highlights-yellow-background: #65520a;
+  --bn-colors-highlights-green-text: #91c4a8;
+  --bn-colors-highlights-green-background: #274f3b;
+  --bn-colors-highlights-blue-text: #8dc7e2;
+  --bn-colors-highlights-blue-background: #1e4a61;
+  --bn-colors-highlights-purple-text: #c0a0ec;
+  --bn-colors-highlights-purple-background: #49316b;
+  --bn-colors-highlights-pink-text: #e2a0c6;
+  --bn-colors-highlights-pink-background: #632b4d;
+}
+
+/* The toolbar's select trigger and selected option have explicit utility
+   colors, so set both the control and its text descendants in dark mode. */
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-trigger"] {
+  background-color: #292a27 !important;
+  border-color: rgb(255 255 255 / 14%) !important;
+  color: #f5f5f4 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-trigger"] * {
+  color: #f5f5f4 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-trigger"]:is(:hover, :focus, :focus-visible, [data-popup-open], [data-open]) {
+  background-color: #343833 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-content"] [data-slot="select-item"] {
+  background-color: #191918 !important;
+  color: #ededed !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-content"] [data-slot="select-item"] * {
+  color: #ededed !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-content"] [data-slot="select-item"]:is(:hover, :focus, :focus-visible, [data-highlighted], [aria-selected="true"], [data-selected="true"]) {
+  background-color: #343833 !important;
+  color: #f5f5f4 !important;
+}
+
+.note-blocknote .bn-root[data-color-scheme="dark"] [data-slot="select-content"] [data-slot="select-item"]:is(:hover, :focus, :focus-visible, [data-highlighted], [aria-selected="true"], [data-selected="true"]) * {
+  color: #f5f5f4 !important;
+}

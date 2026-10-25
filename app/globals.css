@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "@blocknote/core/style.css";
+@import "@blocknote/shadcn/style.css";
+
+@source "../node_modules/@blocknote/shadcn";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -96,6 +100,54 @@
   --color-popover: oklch(0.99 0.003 90);
   --color-popover-foreground: oklch(0.24 0.01 155);
   --color-border: oklch(0.88 0.01 90);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+  clip-path: circle(0 at var(--theme-transition-x, 50vw) var(--theme-transition-y, 50vh));
+  animation: theme-reveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-old(workspace-page) {
+  animation: workspace-page-exit 140ms ease-in both;
+}
+
+::view-transition-new(workspace-page) {
+  animation: workspace-page-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+@keyframes workspace-page-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes workspace-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes theme-reveal {
+  to {
+    clip-path: circle(150vmax at var(--theme-transition-x, 50vw) var(--theme-transition-y, 50vh));
+  }
 }
 
 body {
@@ -520,11 +572,100 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .note-blocknote *,
+  .note-blocknote *::before,
+  .note-blocknote *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  ::view-transition-new(root) {
+    animation: none;
+    clip-path: none;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+}
+
+.note-blocknote {
+  --bn-colors-editor-text: #ededed;
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: #ededed;
+  --bn-colors-menu-background: #191918;
+  --bn-colors-tooltip-text: #ededed;
+  --bn-colors-tooltip-background: #191918;
+  --bn-colors-hovered-text: #ededed;
+  --bn-colors-hovered-background: rgb(255 255 255 / 8%);
+  --bn-colors-selected-text: #fffefa;
+  --bn-colors-selected-background: #343833;
+  --bn-colors-disabled-text: #73766f;
+  --bn-colors-disabled-background: #292a27;
+  --bn-colors-shadow: rgb(0 0 0 / 35%);
+  --bn-colors-border: rgb(255 255 255 / 12%);
+  --bn-colors-side-menu: rgb(255 255 255 / 40%);
+  --bn-colors-highlights-gray-text: #bebdb8;
+  --bn-colors-highlights-gray-background: #464646;
+  --bn-colors-highlights-brown-text: #d4aa91;
+  --bn-colors-highlights-brown-background: #64473a;
+  --bn-colors-highlights-red-text: #ff9292;
+  --bn-colors-highlights-red-background: #682c2c;
+  --bn-colors-highlights-orange-text: #ffc078;
+  --bn-colors-highlights-orange-background: #6d3b13;
+  --bn-colors-highlights-yellow-text: #ffe08a;
+  --bn-colors-highlights-yellow-background: #65520a;
+  --bn-colors-highlights-green-text: #91c4a8;
+  --bn-colors-highlights-green-background: #274f3b;
+  --bn-colors-highlights-blue-text: #8dc7e2;
+  --bn-colors-highlights-blue-background: #1e4a61;
+  --bn-colors-highlights-purple-text: #c0a0ec;
+  --bn-colors-highlights-purple-background: #49316b;
+  --bn-colors-highlights-pink-text: #e2a0c6;
+  --bn-colors-highlights-pink-background: #632b4d;
+}
+
+:root[data-workspace-theme="light"] .note-blocknote {
+  --bn-colors-editor-text: #292a27;
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: #292a27;
+  --bn-colors-menu-background: #fffefa;
+  --bn-colors-tooltip-text: #292a27;
+  --bn-colors-tooltip-background: #f4f2ed;
+  --bn-colors-hovered-text: #292a27;
+  --bn-colors-hovered-background: #e5e6e3;
+  --bn-colors-selected-text: #fffefa;
+  --bn-colors-selected-background: #343833;
+  --bn-colors-disabled-text: #73766f;
+  --bn-colors-disabled-background: #e5e6e3;
+  --bn-colors-shadow: rgb(42 52 48 / 20%);
+  --bn-colors-border: rgb(43 54 49 / 15%);
+  --bn-colors-side-menu: #858982;
+}
+
+.note-blocknote .bn-editor {
+  min-height: 100%;
+  padding-inline: clamp(0.5rem, 3vw, 2.5rem);
+  color: var(--bn-colors-editor-text);
+  line-height: 1.7;
+}
+
+.note-blocknote .bn-editor:focus {
+  outline: none;
+}
+
+.note-blocknote .bn-root {
+  min-height: 100%;
 }
 
 .tiptap {
